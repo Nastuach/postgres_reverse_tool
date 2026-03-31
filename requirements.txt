@@ -1,0 +1,6 @@
+# requirements.txt
+psycopg2-binary>=2.9.0
+Pillow>=9.0.0
+reportlab>=3.6.0
+openpyxl>=3.0.0
+graphviz>=0.20.0

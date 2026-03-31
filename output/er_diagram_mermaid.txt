@@ -1,0 +1,16 @@
+erDiagram
+    users {
+        INTEGER id PK
+        VARCHAR name
+        VARCHAR email
+        TIMESTAMP created_at
+    }
+
+    orders {
+        INTEGER id PK
+        INTEGER user_id
+        NUMERIC amount
+        VARCHAR status
+    }
+
+    orders ||--o{ users : ""

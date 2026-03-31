@@ -1,0 +1,7 @@
+digraph ER_Diagram {
+	nodesep=0.5 rankdir=LR ranksep=0.7 splines=ortho
+	node [fontname=Arial fontsize=11 shape=plaintext]
+	orders [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"><TR><TD COLSPAN="2" BGCOLOR="#7c3aed"><B>orders</B></TD></TR><TR><TD COLSPAN="2" BGCOLOR="#2a2a3e"> </TD></TR><TR><TD ALIGN="LEFT">🔑    id</TD><TD>integer</TD></TR><TR><TD ALIGN="LEFT">🔑 🔗 user_id</TD><TD>integer</TD></TR><TR><TD ALIGN="LEFT">🔑    amount</TD><TD>numeric</TD></TR><TR><TD ALIGN="LEFT">🔑    status</TD><TD>character varying</TD></TR><TR><TD COLSPAN="2" BGCOLOR="#f59e0b"><B>📜 Правила:</B></TD></TR><TR><TD COLSPAN="2" ALIGN="LEFT">Ограничение целостности: ((amount > (0)::numeric))</TD></TR><TR><TD COLSPAN="2" ALIGN="LEFT">Поле id не может быть пустым</TD></TR></TABLE>> shape=plaintext]
+	users [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"><TR><TD COLSPAN="2" BGCOLOR="#7c3aed"><B>users</B></TD></TR><TR><TD COLSPAN="2" BGCOLOR="#2a2a3e"> </TD></TR><TR><TD ALIGN="LEFT">🔑    id</TD><TD>integer</TD></TR><TR><TD ALIGN="LEFT">🔑    name</TD><TD>character varying</TD></TR><TR><TD ALIGN="LEFT">🔑    email</TD><TD>character varying</TD></TR><TR><TD ALIGN="LEFT">🔑    created_at</TD><TD>timestamp without time zone</TD></TR><TR><TD COLSPAN="2" BGCOLOR="#f59e0b"><B>📜 Правила:</B></TD></TR><TR><TD COLSPAN="2" ALIGN="LEFT">Поле id не может быть пустым</TD></TR><TR><TD COLSPAN="2" ALIGN="LEFT">Поле name не может быть пустым</TD></TR></TABLE>> shape=plaintext]
+	users -> orders [arrowhead=crow color="#f59e0b" dir=forward penwidth=2]
+}
