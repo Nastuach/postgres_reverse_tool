@@ -352,27 +352,124 @@ class ModernPostgresReverseApp:
 
         self.conn_info_text.delete(1.0, tk.END)
         conn_info = f"""
-Хост: {data['config']['host']}:{data['config']['port']}
-База данных: {data['config']['database']}
-Пользователь: {data['config']['user']}
-Дата анализа: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-"""
+    Хост: {data['config']['host']}:{data['config']['port']}
+    База данных: {data['config']['database']}
+    Пользователь: {data['config']['user']}
+    Дата анализа: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    """
         self.conn_info_text.insert(tk.END, conn_info)
 
         self.comments_text.delete(1.0, tk.END)
         for obj, comment in data['comments'].items():
             self.comments_text.insert(tk.END, f"{obj}: {comment}\n")
 
+        # Очистка всех деревьев
         for item in self.tree.get_children():
             self.tree.delete(item)
+        for item in self.columns_tree.get_children():
+            self.columns_tree.delete(item)
+        for item in self.constraints_tree.get_children():
+            self.constraints_tree.delete(item)
+        for item in self.indexes_tree.get_children():
+            self.indexes_tree.delete(item)
+        for item in self.triggers_tree.get_children():
+            self.triggers_tree.delete(item)
+        for item in self.functions_tree.get_children():
+            self.functions_tree.delete(item)
+        for item in self.rules_tree.get_children():
+            self.rules_tree.delete(item)
 
+        # Заполнение таблиц
         for table_name, table in data['tables'].items():
             pk_name = table.get_primary_key()
             pk_text = ', '.join(pk_name.columns) if pk_name else '-'
             self.tree.insert('', 'end', text=table_name,
                             values=(len(table.columns), table.row_count or 0, pk_text, table.description or ''))
 
-        # Заполнение остальных деревьев...
+        # Заполнение колонок
+        for table_name, table in data['tables'].items():
+            for col in table.columns:
+                self.columns_tree.insert('', 'end', 
+                    text=col.name,
+                    values=(
+                        table_name,
+                        col.data_type,
+                        'Да' if col.is_nullable else 'Нет',
+                        col.default_value or '-',
+                        'Да' if col.is_computed else 'Нет',
+                        col.description or '-'
+                    ))
+
+        # Заполнение ограничений
+        for table_name, table in data['tables'].items():
+            for constr in table.constraints:
+                ref_text = ''
+                if constr.type == ConstraintType.FOREIGN_KEY and constr.referenced_table:
+                    ref_text = f"{constr.referenced_table}({', '.join(constr.referenced_columns or [])})"
+                elif constr.type == ConstraintType.CHECK and constr.definition:
+                    ref_text = constr.definition[:100] + '...' if len(constr.definition) > 100 else constr.definition
+                elif constr.type == ConstraintType.PRIMARY_KEY:
+                    ref_text = ', '.join(constr.columns)
+                elif constr.type == ConstraintType.UNIQUE:
+                    ref_text = ', '.join(constr.columns)
+                
+                self.constraints_tree.insert('', 'end',
+                    text=constr.name,
+                    values=(
+                        constr.type.value,
+                        table_name,
+                        ', '.join(constr.columns),
+                        ref_text
+                    ))
+
+        # Заполнение индексов
+        for table_name, table in data['tables'].items():
+            for idx in table.indexes:
+                self.indexes_tree.insert('', 'end',
+                    text=idx.name,
+                    values=(
+                        table_name,
+                        ', '.join(idx.columns),
+                        'Да' if idx.is_unique else 'Нет',
+                        idx.index_type
+                    ))
+
+        # Заполнение триггеров
+        for trigger in data['triggers']:
+            self.triggers_tree.insert('', 'end',
+                text=trigger.name,
+                values=(
+                    trigger.table_name,
+                    trigger.event.value,
+                    trigger.timing.value,
+                    trigger.function_name,
+                    'Да' if trigger.is_enabled else 'Нет'
+                ))
+
+        # Заполнение функций
+        for func in data['functions']:
+            self.functions_tree.insert('', 'end',
+                text=func.name,
+                values=(
+                    func.language,
+                    func.return_type or 'void',
+                    'Да' if func.is_aggregate else 'Нет'
+                ))
+
+        # Заполнение бизнес-правил
+        rule_counter = 1
+        for rule_type, rules in data['business_rules'].items():
+            for rule in rules:
+                self.rules_tree.insert('', 'end',
+                    text=rule.name,
+                    values=(
+                        rule.rule_type,
+                        rule.table_name or '-',
+                        'Да' if rule.is_active else 'Нет'
+                    ))
+                rule_counter += 1
+
+        # Загрузка диаграммы
         self.load_diagram_image()
 
         self.progress.stop()
