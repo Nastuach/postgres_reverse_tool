@@ -690,7 +690,7 @@ class TestBusinessRuleAnalyzer(unittest.TestCase):
 
     def test_extract_check_constraints_basic(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.fetchall.return_value = [
+        analyzer.conn.cursor.return_value.fetchall.return_value = [
             ("chk_age",   "persons",  "CHECK ((age > 0))"),
             ("chk_price", "products", "CHECK ((price >= 0))"),
         ]
@@ -702,7 +702,7 @@ class TestBusinessRuleAnalyzer(unittest.TestCase):
 
     def test_extract_check_constraints_normalizes_schema_prefix(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.fetchall.return_value = [
+        analyzer.conn.cursor.return_value.fetchall.return_value = [
             ("chk_age", "public.persons", "CHECK ((age > 0))"),
         ]
         rules = analyzer.extract_check_constraints()
@@ -710,19 +710,19 @@ class TestBusinessRuleAnalyzer(unittest.TestCase):
 
     def test_extract_check_constraints_empty(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.fetchall.return_value = []
+        analyzer.conn.cursor.return_value.fetchall.return_value = []
         self.assertEqual(analyzer.extract_check_constraints(), [])
 
     def test_extract_check_constraints_db_error_returns_empty(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.execute.side_effect = Exception("DB error")
+        analyzer.conn.cursor.return_value.execute.side_effect = Exception("DB error")
         self.assertEqual(analyzer.extract_check_constraints(), [])
 
     # extract_trigger_rules
 
     def test_extract_trigger_rules_basic(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.fetchall.return_value = [
+        analyzer.conn.cursor.return_value.fetchall.return_value = [
             ("trg_audit", "users", "audit_fn", "O", "CREATE TRIGGER ...", "AFTER", "INSERT"),
         ]
         analyzer._get_function_source = MagicMock(return_value="BEGIN RETURN NEW; END;")
@@ -735,7 +735,7 @@ class TestBusinessRuleAnalyzer(unittest.TestCase):
 
     def test_extract_trigger_rules_disabled_flag(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.fetchall.return_value = [
+        analyzer.conn.cursor.return_value.fetchall.return_value = [
             ("trg_off", "users", "fn", "D", "...", "BEFORE", "UPDATE"),
         ]
         analyzer._get_function_source = MagicMock(return_value=None)
@@ -744,7 +744,7 @@ class TestBusinessRuleAnalyzer(unittest.TestCase):
 
     def test_extract_trigger_rules_enabled_flag(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.fetchall.return_value = [
+        analyzer.conn.cursor.return_value.fetchall.return_value = [
             ("trg_on", "users", "fn", "O", "...", "AFTER", "DELETE"),
         ]
         analyzer._get_function_source = MagicMock(return_value=None)
@@ -753,7 +753,7 @@ class TestBusinessRuleAnalyzer(unittest.TestCase):
 
     def test_extract_trigger_rules_db_error_returns_empty(self):
         analyzer = self._make_analyzer()
-        analyzer.cursor.execute.side_effect = Exception("Connection lost")
+        analyzer.conn.cursor.return_value.execute.side_effect = Exception("Connection lost")
         self.assertEqual(analyzer.extract_trigger_rules(), [])
 
     # analyze_all_rules
